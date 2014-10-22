@@ -1,0 +1,113 @@
+\documentclass{article}
+
+\begin{document}
+\title { Employment and Unemployment in Illinois } 
+\author { Mohit Rathore 
+\\ School of Information Technology 
+\\ Illinois State University
+\\
+\texttt{mrathor@ilstu.edu}}
+\date{\today} 
+\maketitle
+\section{Introduction}
+Economic Conditions in the country or a state is determined by various factors.  Employment and Unemployment are two factors that influence economic condition. There are other factors also like monetary and fiscal policy, productivity, exchange rates and so on. Economic statistics is released weekly, monthly and quarterly. \\ \\
+The employment and unemployment estimates are collected by “The Local Area Statistics (LAUS) Program”. This program is supported by Federal-State for different cities, states, towns, small labor market areas and many more.  Local economic conditions are directly influenced by these estimates. These estimates are evaluated by market participants. On these estimates, they make an assessment of economic conditions and take actions to improve the same.\\ \\
+In this report, we will look into the data of employment and unemployment for Illinois, USA and will see how the employment and unemployment rate is changing over the years. 
+\\ 
+
+\section{Data Section}
+In this section, we will go through the whole process from obtaining the data to exploring one by one.
+To work with data in our tutorial, first we need to include the packages that we will be using further in our tutorial to analyze and to display our data.
+\\ \\
+Below in code chunk 1, library command is used to include some packages like ggplot2, XML and reshape2.
+\\
+<<>>=
+library(XML)
+library(ggplot2)
+library(reshape2)
+@
+\emph{Code Chunk 1}
+\subsection{Obtain Data}
+In this section, we will learn how to obtain data that is present on Quandl. Quandl is a web application on which all numerical data about finance and economics is provided which is gathered from various sources. To pull the data from quandle in R, we need to use Quandl API. To do so, first we need to install the Quandl package in our R Studio. After installing the package, we can use the command to pull the data from Quandl.
+\\ \\
+Below a command is used for retrieving employment data from Quandl API. To access the Quandl API, we need an authentication token. We need to do free sign-up on Quandl website to get that authentication token. The command will take the name of the dataset that we want to pull out and the authentication token. We have stored the data in dataset named as employdata.\\
+
+employdata <- Quandl("BLSI/LAUST170000000000005", \\ authcode= "kANKPQyEQy8RQaTZs-VB")\\
+\\
+After pulling out data, we wish to view that, so the View command is used to view the data stored in a dataset.\\ \\
+View(employdata)\\
+
+We will do the same process to pull the unemployment data from the Quandl. Below command is for retrieving unemployment data and storing it in a dataset called 'unemploydata'.\\
+
+unemploydata <- Quandl("BLSI/LAUST170000000000004", \\ authcode= "kANKPQyEQy8RQaTZs-VB")\\
+\subsection{Scrub the Data}
+After obtaining the data, the second step in OSEMN is to scrub the data. In our case, the data is quite clean, so we just need to merge the data to analyze it properly.\\
+\\
+Below is the command that is used to merge the employment and unemployment dataset in a single dataset. Merge command is similar to join operation in database. We are specifying the common column between both the datasets, which in our case is 'Date' and also specifying the name of the columns to merge. File.all is our new dataset with three columns.\\
+
+File.all <- merge(x = employdata, y = unemploydata, by=c("Date"))\\
+
+\subsection{Exploring the Data}
+After scrubbing the data, we will now explore the data in this section. To explore our data, we need to write a CSV file so that we can read the file into data frame, and we can use it to plot graph and to do more exploring of our data. The command below is used to create a csv file from the dataset 'File.all' (created earlier) So giving it name as EmploymentUnemploymentdata.csv
+\\ \\
+write.csv(File.all, "EmploymentUnemploymentdata.csv")
+\\ \\
+Now, for more exploring, we need to read the csv file that we have created above. The read.csv command below in code chunk 2 will take a file name as its first argument, the second argument indicates that the file contains the names of the variables as its first line. The third argument is the field separator character.
+
+<<>>=
+library(ggplot2)
+File <- read.csv(file="EmploymentUnemploymentdata.csv", header = TRUE , sep=",")
+@
+\emph{Code Chunk 2}
+\\ \\
+The function below in code in chunk 3 prints the name of class to which our object belongs to. 
+<<>>=
+class(File)
+@
+\emph{Code Chunk 3}
+\\ \\
+The str() function is used to prints the structure of an R object. As shown below in code chunk 4, it has listed the column name with their values and also specifies the data type. 
+{\tiny
+<<>>=
+str(File)
+@
+}
+\emph{Code Chunk 4}
+\\ \\
+The summary() function will display the brief information about our data. As displayed below in code chink 5, it gives brief information on ours each column.
+
+<<>>=
+summary(File)
+@
+\emph{Code Chunk 5}
+\\ \\
+As we can see from the above, our dataframe has a three columns Date, Employment data and Unemployment data. We have data from January 2012 to July 2014. There is an entry for each month in the dataframe from January 2012 to July 2014. Our Date column is in a Date format. Employment and unemployment data are of number type. The other information like maximum and minimum allowable values are shown in the summary.
+
+\section{Result}
+In this section, we will analyze our data by showing it in a table format and by plotting graph. 
+
+<<>>=
+#Displays our dataframe object
+File
+@
+\emph{\textbf{Table 1. Employment and Unemployment data} } 
+\\ \\
+The Table 1 above include three columns which are Date, Employment and Unemployment. From the table, we can see that highest employment in Illinois was in July, 2014 which was 6142902. If we analyze the data more closely, we found that the highest unemployment in Illinois was in January, 2013 which was 668919. The increased unemployment can be because of great recession effects. 
+\\
+Now we will create a graph to display our findings. Before creating the graph, we need to include reshape2 package for using some its functions. To plot our graph, we need to delete the irrelevant column from our dataframe. We are storing rest of our data in a new dataframe called 'File.new'.\\ \\
+After doing that, we need to reshape our data from wide to long. We will use melt command from reshape package on our dataframe 'File.new 'to make it long. 
+\\ \\
+After reshaping of our data, we will plot the data on the graph by using, ggplot function from ggplot package. This function takes the name of the dataframe as its first argument. For second argument, with aes, we are mapping our variables on the axis of the graph. We want the line graph that whys we are using geom\_line() function. To present our graph with the title, we are using ggtitle and formatting it with the help of theme command. 
+
+<<>>=
+library(reshape2)
+File.new <-File[,-1]
+File.long <-melt(File.new)
+p <- ggplot(File.long, aes(x = Date, y=value/1000000, group=variable, colour = variable))
+       p + geom_line()  + ggtitle("Employment and Unemployment in Illinois, USA") +
+        theme(plot.title =element_text(lineheight=.8, face="bold"))
+@
+
+The graph above shows that the number of employment is higher than the unemployment in Illinois.The line graph also shows that employment is increasing in Illinois from last seven months and in July 2014, it has reached its maximum value. The graph also shows that unemployment is decreasing in Illinois from last five months, and it has reached its lowest value in July 2014. With the help of the above graph, we can predict that the local economic conditions in Illinois are getting better.
+
+\end{document}
